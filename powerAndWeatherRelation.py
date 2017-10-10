@@ -14,6 +14,7 @@ def daterange(start_date, end_date):
 
 # get power data
 def getPowerData(powerCategory):
+
 	# connet to mysql
 	connet = mysql.connector.connect(
 		user="dm",
@@ -22,22 +23,25 @@ def getPowerData(powerCategory):
 		database="DM_hw0"
 	)
 	cursor = connet.cursor()
-	# value = list([0])
 	date = np.array([])
 	value = np.array([])
 	query = ("SELECT test.date, AVG(test." + powerCategory + ")\
 		FROM `test`\
 		Where test.date>='" + str(startDate) + "' and test.date <= '" + str(endDate) +"'\
 		group by test.date")
+
 	cursor.execute(query)
 	for result in cursor:
 		date = np.append(date, result[0].strftime('%Y-%m-%d'))
 		value = np.append(value, result[1])
+
 	# close connection
 	connet.close()
 	return date, value
 
+# get weather data
 def getWeatherData(cityIndex):
+
 	# connet to mysql
 	connet = mysql.connector.connect(
 		user="dm",
@@ -46,7 +50,6 @@ def getWeatherData(cityIndex):
 		database="DM_hw0"
 	)
 	cursor = connet.cursor()
-	# value = list([0])
 	date = np.array([])
 	value = np.array([])
 	query = ("SELECT weather.date, AVG(weather.temperature) \
@@ -54,37 +57,66 @@ def getWeatherData(cityIndex):
 		where weather.date>='" + str(startDate) + "' and weather.date <= '" + str(endDate) +"'\
 		and weather.cityIndex=" + str(cityIndex) + 
 		" group by weather.date")
+
 	cursor.execute(query)
 	for result in cursor:
 		date = np.append(date, result[0].strftime('%Y-%m-%d'))
 		value = np.append(value, result[1])
+
 	# close connection
 	connet.close()
 	return date, value
 
+# because there are some date that have no power data or weather data,
+# so, this is to normalize.
+def setData(weatherDate, temperature, powerDate, powerSupply, powerUsage):
+	i = 0
+	for singleDate in daterange(startDate, endDate):
+		tempDate = singleDate.strftime("%Y-%m-%d")
+		temperature[i] = temperature[i] * 50
+
+		# if weather has no data at the date, append 0 to data set
+		if(weatherDate[i] != tempDate):
+			print tempDate, ', ', i
+			weatherDate = np.insert(weatherDate, i, tempDate)
+			temperature = np.insert(temperature, i, 0)
+
+		# if power has no data at the date, append 0 to data set
+		if(powerDate[i] != tempDate):
+			powerDate = np.insert(powerDate, i, tempDate)
+			powerSupply = np.insert(powerSupply, i, 0)
+			powerUsage = np.insert(powerUsage, i, 0)
+
+		i = i + 1;
+
+	return weatherDate, temperature, powerDate, powerSupply, powerUsage
+
+def drawCurve(cityIndex, area):
+	# get power data
+	powerDate, powerSupply = getPowerData(area + 'Supply')
+	powerDate, powerUsage = getPowerData(area + 'Usage')
+
+	# get temperature data
+	weatherDate, temperature = getWeatherData(3)
+
+	# normalize the data
+	weatherDate, temperature, powerDate, powerSupply, powerUsage = \
+		setData(weatherDate, temperature, powerDate, powerSupply, powerUsage)
+
+	# draw curve
+	plt.plot(weatherDate, temperature, 'r--', weatherDate, powerSupply, 'bs', weatherDate, powerUsage, 'g^')
+	plt.show()
+
 
 # main
-# get power data
-powerDate, powerSupply = getPowerData('northSupply')
-powerDate, powerUsage = getPowerData('northUsage')
+# North: Taipei, 466920, [3]
+drawCurve(3, 'north')
 
-# get temperature data
-weatherDate, taipeiTemperature = getWeatherData(3)
+# Center: Taitung, 467490, [26]
+drawCurve(26, 'center')
 
-i = 0
-for singleDate in daterange(startDate, endDate):
-	tempDate = singleDate.strftime("%Y-%m-%d")
-	taipeiTemperature[i] = taipeiTemperature[i] * 50
-	if(weatherDate[i] != tempDate):
-		print tempDate, ', ', i
-		weatherDate = np.insert(weatherDate, i, tempDate)
-		taipeiTemperature = np.insert(taipeiTemperature, i, 0)
+# South: Kaohsiung, 467440, [15]
+drawCurve(15, 'south')
 
-	if(powerDate[i] != tempDate):
-		powerDate = np.insert(powerDate, i, tempDate)
-		powerSupply = np.insert(powerSupply, i, 0)
-		powerUsage = np.insert(powerUsage, i, 0)
-	i = i + 1;
-
-plt.plot(weatherDate, taipeiTemperature, 'r--', weatherDate, powerSupply, 'bs', weatherDate, powerUsage, 'g^')
-plt.show()
+# East: Taichung, 467490, [17]
+drawCurve(17, 'east')
