@@ -49,19 +49,21 @@ def meanTransformation(supply, usage):
 
 	return supply, usage
 
-# transform data by detrend
+# transform data by Amplitude Scaling
 def amplitudeScalingTransformation(supply, usage):
 	supply = np.subtract(supply, supply.mean()) / np.std(supply)
 	usage = np.subtract(usage, usage.mean()) / np.std(usage)
 
 	return supply, usage
 
+# transform data by Linear Trend Removal
 def detrendTransformation(supply, usage):
 	supply = signal.detrend(supply)
 	usage = signal.detrend(usage)
 
 	return supply, usage
 
+# tranform data by Noise Reduction
 def noiseReductionTransformation(supply, usage):
 	b = [1.0 / supply.size] * supply.size
 	a = 1
