@@ -97,7 +97,7 @@ def drawCurve(cityIndex, area):
 	powerDate, powerUsage = getPowerData(area + 'Usage')
 
 	# get temperature data
-	weatherDate, temperature = getWeatherData(3)
+	weatherDate, temperature = getWeatherData(cityIndex)
 
 	# normalize the data
 	weatherDate, temperature, powerDate, powerSupply, powerUsage = \
