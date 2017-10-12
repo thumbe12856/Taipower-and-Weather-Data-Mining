@@ -11,8 +11,11 @@ def insertDataToDB(city, cityIndex):
 	)
 	cursor = connet.cursor()
 	insertData = list()
+	root = xml.etree.ElementTree.parse('./data/weather/C-B0024-002.xml').getroot()
+	
 	# root -> dataset(root[7]) -> locationName(location[0])
 	for timeElement in root[7][cityIndex][2].findall('{urn:cwb:gov:tw:cwbcommon:0.1}time'):
+
 		# tempNowDate = time.strptime(timeElement[0].text[:10], "%Y-%m-%d")
 		date = timeElement[0].text[:10]
 		time = timeElement[0].text[10:]
@@ -24,6 +27,7 @@ def insertDataToDB(city, cityIndex):
 	cursor.executemany(insert, insertData);
 	connet.commit()
 	cursor.close()
+	
 	# close mysql connetion.
 	connet.close()
 

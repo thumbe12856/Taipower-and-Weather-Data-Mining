@@ -8,7 +8,7 @@ def findAreaMaxTemperature(area, city, cityIndex):
 	tempDate = '2016-10-01'
 	MaxTemperature = -10000.0
 
-	f = open('./result/weather/task2/2.c/' + area + '.csv', 'w')
+	f = open('./result/task2/2.c/' + area + '.csv', 'w')
 	w = csv.writer(f)
 	writeData = [
 		[area, 'Date', 'Max Temperature']
@@ -28,7 +28,7 @@ def findAreaMaxTemperature(area, city, cityIndex):
 				if(tempTemperature > MaxTemperature):
 					MaxTemperature = tempTemperature
 
-	# write result to ./result/weather/task2/2.c/{area}.csv.
+	# write result to ./result/task2/2.c/{area}.csv.
 	w.writerows(writeData)
 	f.close()
 
@@ -61,7 +61,7 @@ def findAllAreaMaxAndMinTemperature():
 					SecondMinTemperature = tempTemperature
 
 	# write result to ./result/weather/task2/2.d/result.csv.
-	f = open('./result/weather/task2/2.d/result.csv', 'w')
+	f = open('./result/task2/2.d/result.csv', 'w')
 	w = csv.writer(f)
 	writeData = [
 		['City', 'Date', 'Max Temperature'],

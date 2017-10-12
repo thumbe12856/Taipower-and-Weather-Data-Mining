@@ -104,7 +104,7 @@ def drawCurve(cityIndex, area):
 		setData(weatherDate, temperature, powerDate, powerSupply, powerUsage)
 
 	# draw curve
-	plt.plot(weatherDate, temperature, 'r--', weatherDate, powerSupply, 'bs', weatherDate, powerUsage, 'g^')
+	plt.plot(weatherDate, temperature, 'r-', weatherDate, powerSupply, 'b-', weatherDate, powerUsage, 'g-')
 	plt.show()
 
 
