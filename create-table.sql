@@ -18,5 +18,8 @@ create table weather(
 	`time` char(128),
 	`city` char(128),
 	`cityIndex` int,
-	`temperature` double
+	`temperature` double,
+	`humidity` double,
+	`wind` double,
+	`precipitation` double
 )
