@@ -69,7 +69,7 @@ def getWeatherData(cityIndex):
 
 # because there are some date that have no power data or weather data,
 # so, this is to normalize.
-def setData(weatherDate, temperature, powerDate, powerSupply, powerUsage):
+def normalizeData(weatherDate, temperature, powerDate, powerSupply, powerUsage):
 	i = 0
 	for singleDate in daterange(startDate, endDate):
 		tempDate = singleDate.strftime("%Y-%m-%d")
@@ -101,7 +101,7 @@ def drawCurve(cityIndex, area):
 
 	# normalize the data
 	weatherDate, temperature, powerDate, powerSupply, powerUsage = \
-		setData(weatherDate, temperature, powerDate, powerSupply, powerUsage)
+		normalizeData(weatherDate, temperature, powerDate, powerSupply, powerUsage)
 
 	# draw curve
 	plt.plot(weatherDate, temperature, 'r-', weatherDate, powerSupply, 'b-', weatherDate, powerUsage, 'g-')
