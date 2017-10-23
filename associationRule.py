@@ -120,17 +120,19 @@ def setData(cityIndex, area, tempDiscretization, powerDiscretization):
 	print 'discretization:'
 	print '	temperature:', tempDiscretization
 	print '	power:', powerDiscretization
-	temperature = np.divide(temperature, tempDiscretization).astype(int)
-	powerSupply = np.divide(powerSupply, powerDiscretization).astype(int)
-	powerUsage = np.divide(powerUsage, powerDiscretization).astype(int)
+	temperature = np.multiply(np.divide(temperature, tempDiscretization).astype(int), tempDiscretization)
+	powerSupply = np.multiply(np.divide(powerSupply, powerDiscretization).astype(int), powerDiscretization)
+	powerUsage = np.multiply(np.divide(powerUsage, powerDiscretization).astype(int), powerDiscretization * 10)
 
-	print 'temperature unique data length: ', np.unique(temperature).size
-	print 'powerSupply unique data length: ', np.unique(powerSupply).size, '\n'
+	print 'temperature unique data length: ', np.unique(temperature).size, ', min value:', np.min(temperature), ', max value:', np.max(temperature)
+	print 'powerSupply unique data length: ', np.unique(powerSupply).size, ', min value:', np.min(powerSupply), ', max value:', np.max(powerSupply)
+	print 'powerUsage unique data length: ', np.unique(powerUsage).size, ', min value:', np.min(powerUsage), ', max value:', np.max(powerUsage)
+	print '\n'
 
 	transactions = list()
 	for i in range(temperature.size):
 		transactions.append(tuple((
-			temperature[i], powerSupply[i]
+			temperature[i], powerSupply[i], powerUsage[i]
 		)))
 
 	print 'transactions length: ', len(transactions)
@@ -144,12 +146,12 @@ def setData(cityIndex, area, tempDiscretization, powerDiscretization):
 	return transactions
 
 # Apriori alg
-def printAprioriResult(transactions, support):
+def printAprioriResult(transactions, support, confidence):
 	
 	# Apriori algorithm
 	print 'Apriori algorithm:'
 	print 'min_support: ', support
-	results = list(apriori(transactions, min_support = support))
+	results = list(apriori(transactions, min_support = support, min_confidence = confidence))
 	results_df = pd.DataFrame()
 
 	output = []
@@ -179,8 +181,8 @@ def printAprioriResult(transactions, support):
 # main
 # North: Taipei, 466920, [3]
 print 'Location: Taipei'
-transactions = setData(3, 'north', 3, 50)
-printAprioriResult(transactions, 0.05)
+transactions = setData(3, 'north', 5, 50)
+printAprioriResult(transactions, 0.04, 0.1)
 
 '''
 # Center: Taichung, 467490, [26]
