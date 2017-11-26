@@ -6,6 +6,7 @@ from sklearn import metrics
 import matplotlib.pyplot as plt
 import itertools
 
+# get location data
 def getLocationData():
 	file = "./data/location.csv"
 	f = open(file, 'r')
@@ -22,6 +23,7 @@ def getLocationData():
 	f.close()
 	return locations
 
+# main
 # K-means pre parsing
 ori_cols = ['stationID', 'stationName', 'heigh', 'latitude', 'longitude', 'city', 'address', 'datafrom', 'removeDataDate', 'commit', 'originalStationID', 'newStationID', 'empty']
 drop_cols = ['stationID', 'stationName', 'heigh', 'city', 'address', 'datafrom', 'removeDataDate', 'commit', 'originalStationID', 'newStationID', 'empty']
@@ -60,11 +62,6 @@ LABEL_COLOR_MAP = {
 
 label_color = [LABEL_COLOR_MAP[l] for l in labels]
 
-#plt.scatter(df['latitude'], df['longitude'], c=label_color)
-#plt.title('Kmeans Clusters')
-
-#plt.show()
-
 # DBSCAN
 import numpy as np
 import matplotlib.pyplot as plt
@@ -72,5 +69,13 @@ from sklearn import datasets
 from sklearn.cluster import DBSCAN
 
 y_pred = DBSCAN(eps = 0.5, min_samples = 10).fit_predict(data_attributes)
-plt.scatter(data_attributes['latitude'], data_attributes['longitude'], c=y_pred)
+i = 0
+for l in y_pred:
+	if(l == 0):
+		label_color[i] = 'r'
+	else:
+		label_color[i] = 'b'
+	i = i+1
+
+plt.scatter(data_attributes['latitude'], data_attributes['longitude'], c=label_color)
 plt.show()
