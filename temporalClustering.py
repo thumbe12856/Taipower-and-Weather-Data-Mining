@@ -15,6 +15,14 @@ import mysql.connector
 import datetime
 from datetime import timedelta, date
 
+import getData
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+
 beforeStartDate = date(2016, 9, 30)
 startDate = date(2016, 10, 1)
 endDate = date(2017, 6, 30)
@@ -33,11 +41,6 @@ nightTime = {
 	'from': ' 18:00',
 	'to':   ' 21:00'
 }
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 LABEL_COLOR_MAP = {
 	0: 'r',
@@ -59,124 +62,6 @@ LABEL_COLOR_MAP = {
 	16: '#ff9000',
 	17: '#a5d3a6'
 }
-
-# get location data
-def getLocationData():
-	file = "./data/location.csv"
-	f = open(file, 'r')
-	locations = list()
-	swit = False
-	for row in csv.reader(f):
-		if(swit):
-			row[3] = float(row[3])
-			row[4] = float(row[4])
-			locations.append(row)
-		if(row[3] < 120):
-			print row[1]
-		swit = True
-	f.close()
-	return locations
-
-# get power data from mysql
-def getPowerData():
-
-	# connet to mysql
-	connet = mysql.connector.connect(
-		user="dm",
-		password="dm", 
-		host="127.0.0.1", 
-		database="DM_hw0"
-	)
-	cursor = connet.cursor()
-	# SELECT * FROM `test` Where test.date>= '2016-10-01' and test.date <= '2017-01-23' and test.date>= '2017-04-20' and test.date <= '2017-06-30'
-	query = ("SELECT * \
-		FROM `test`\
-		Where (test.date>='" + str(startDate) + "'and test.date <= '2017-01-23') or (test.date>= '2017-04-20'\
-		and test.date <= '" + str(endDate) +"')")
-
-	# morning: 6 ~ 9
-	# afternoon: 11 ~ 14
-	# night: 18 ~ 21
-	cursor.execute(query)
-	parseData = list()
-	morning = 0
-	afternoon = 4
-	night = 8
-	temp = [0] * (8 * 3 * 4 + 1)
-	tempDate = startDate.strftime("%Y-%m-%d")
-
-	for result in cursor:
-		if(tempDate != result[1].strftime("%Y-%m-%d")):
-			temp[8 * 3 * 4] = tempDate
-			tempDate = result[1].strftime("%Y-%m-%d")
-			parseData.append(temp)
-			morning = 0
-			afternoon = 4
-			night = 8
-			temp = [0] * (8 * 3 * 4 + 1)
-		hour = result[2][1] + result[2][2]
-		if(6 <= int(hour) and int(hour) <= 9):
-			for i in range(8):
-				temp[morning + 12 * i] = result[3 + i]
-			morning = morning + 1
-
-		elif(11 <= int(hour) and int(hour) <= 14):
-			for i in range(8):
-				temp[afternoon + 12 * i] = result[3 + i]
-			afternoon = afternoon + 1
-
-		elif(18 <= int(hour) and int(hour) <= 21):
-			for i in range(8):
-				temp[night + 12 * i] = result[3 + i]
-			night = night + 1
-
-	temp[8 * 3 * 4] = tempDate
-	parseData.append(temp)
-
-	powerDataDF = pd.DataFrame(parseData)
-
-	# close connection
-	connet.close()
-
-	return powerDataDF
-
-# get weather data
-def getWeatherData(cityIndex, time, column):
-
-	# connet to mysql
-	connet = mysql.connector.connect(
-		user="dm",
-		password="dm", 
-		host="127.0.0.1", 
-		database="DM_hw0"
-	)
-	cursor = connet.cursor()
-	query = ("SELECT weather.date, weather.temperature \
-		FROM `weather` \
-		where ((weather.date>='" + str(startDate) + "'and weather.date <= '2017-01-23') or (weather.date>= '2017-04-20'\
-		and weather.date <= '" + str(endDate) +"'))\
-		and weather.cityIndex=" + str(cityIndex) + 
-		" and weather.time >= '" + str(time['from']) + "' and weather.time <= '" + str(time['to']) + "'")
-	cursor.execute(query)
-	date = list()
-	value = list()
-	tempDate = startDate.strftime("%Y-%m-%d")
-	temp = list()
-
-	for result in cursor:
-		if(tempDate != result[0].strftime("%Y-%m-%d")):
-			date.append(tempDate)
-			value.append(temp)
-			tempDate = result[0].strftime("%Y-%m-%d")
-			temp = list()
-		
-		temp.append(result[1])
-	value.append(temp)
-
-	valueDF = pd.DataFrame(value, columns=[column, column, column, column])
-	# close connection
-	connet.close()
-	return valueDF
 
 # pca
 def pcaReduce(data):
@@ -204,7 +89,7 @@ def kmeans(data):
 
 # main
 # get north power data
-powerDataDF = getPowerData()
+powerDataDF = getData.power()
 
 # date: powerDataDF[96]
 # northSupply: powerDataDF.iloc[4*3 * 0 : 4*3 * 1]
@@ -213,9 +98,9 @@ northSupply = powerDataDF.iloc[:,0:12]
 northUsage  = powerDataDF.iloc[:,12:24]
 
 # get temperature data
-morningTemperature = getWeatherData(3, morningTime, 'morning')
-afternoonTemperature = getWeatherData(3, afternoonTime, 'afternoon')
-nightTemperature = getWeatherData(3, nightTime, 'night')
+morningTemperature = getData.weather(3, morningTime, 'morning')
+afternoonTemperature = getData.weather(3, afternoonTime, 'afternoon')
+nightTemperature = getData.weather(3, nightTime, 'night')
 temperature = pd.concat([morningTemperature, afternoonTemperature, nightTemperature], axis=1)
 
 # pca
