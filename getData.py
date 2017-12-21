@@ -8,7 +8,7 @@ from datetime import timedelta, date
 
 beforeStartDate = date(2016, 10, 20)
 startDate = date(2016, 10, 20)
-endDate = date(2016, 10, 27)
+endDate = date(2016, 11, 15)
 
 # get power data from mysql
 def power():
