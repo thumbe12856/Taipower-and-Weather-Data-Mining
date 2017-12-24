@@ -1,4 +1,5 @@
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
 import pandas as pd
 import numpy as np
 import random
@@ -28,23 +29,26 @@ predictTime = {
 	5: '2016-10-28 12:00'
 }
 
-
-""" knn algorithm to predict """
-def knn(traningDataIndex, testingDataIndex):
-
+def setTTData(traningDataIndex, testingDataIndex, data):
 	traningX = []
 	traningY = []
 	for i in traningDataIndex:
 		traningX.append([i])
-		traningY.append(round(northSupply[i % 12][i / 12], 1) * 10)
+		traningY.append(data[i])
 
 	testingX = []
 	testingY = []
 	for i in testingDataIndex:
 		testingX.append([i])
-		testingY.append(round(northSupply[i % 12][i / 12], 1) * 10)
+		testingY.append(data[i])
 
-	neigh = KNeighborsClassifier(n_neighbors=3)
+	return traningX, traningY, testingX, testingY
+
+
+""" knn algorithm to predict """
+def knn(traningX, traningY, testingX, testingY):
+
+	neigh = KNeighborsClassifier(n_neighbors=4)
 	neigh.fit(traningX, traningY) 
 
 	error = 0.0
@@ -54,10 +58,31 @@ def knn(traningDataIndex, testingDataIndex):
 		error += abs(predict[0] - testingY[ii]) / testingY[ii]
 		ii = ii + 1
 	error /= len(testingDataIndex)
-	print "knn error percentage: " + str(round(error * 100, 2)) + "%"
 
 	predict = neigh.predict([[97]]) / 10
-	print "knn predict: ", round(predict[0], 1)
+	print "knn predict: " + str(round(predict[0], 1))
+	print "knn testing error percentage: " + str(round(error * 100, 2)) + "%"
+	print "knn predicting error percentage: " + str(round(abs(round(predict[0], 1) - realAnswer) / realAnswer * 100, 2)) + '%\n'
+
+	return
+
+def NaiveBayes(traningX, traningY, testingX, testingY):
+
+	clf = GaussianNB()
+	clf.fit(traningX, traningY) 
+
+	error = 0.0
+	ii = 0
+	for i in testingDataIndex:
+		predict = clf.predict([[i]])
+		error += abs(predict[0] - testingY[ii]) / testingY[ii]
+		ii = ii + 1
+	error /= len(testingDataIndex)
+
+	predict = clf.predict([[97]]) / 10
+	print "Naive Bayes predict: " + str(round(predict[0], 1))
+	print "Naive Bayes testing error percentage: " + str(round(error * 100, 2)) + "%"
+	print "Naive Bayes predicting error percentage: " + str(round(abs(round(predict[0], 1) - realAnswer) / realAnswer * 100, 2)) + '%\n'
 
 	return
 
@@ -104,12 +129,24 @@ if __name__ == "__main__":
 	traning data: 70% (96 * 0.7 = 67)
 	testing data: 30% (96 * 0.3 = 29)
 	"""
-	for i in range(6):
+	realIndex = 96
+	for i in range(1):
 		randomDataIndex = random.sample(xrange(0 + i, 96 + i), 96)
 		traningDataIndex = sorted(randomDataIndex[:67])
 		testingDataIndex = sorted(randomDataIndex[67:96])
 
+		""" reshape """
+		tempData = [0] * 200
+		for j in randomDataIndex:
+			tempData[j] = round(northSupply[j % 12][j / 12], 1) * 10
+
+		""" set traning/testing data """
+		traningX, traningY, testingX, testingY = setTTData(traningDataIndex, testingDataIndex, tempData)
+		realAnswer = northSupply[(realIndex + i) % 12][(realIndex + i) / 12]
+
 		print "Date: ", predictTime[i]
-		knn(traningDataIndex, testingDataIndex)
+		print "Exact value: " + str(realAnswer) + '\n'
+		knn(traningX, traningY, testingX, testingY)
+		NaiveBayes(traningX, traningY, testingX, testingY)
 
 		print "\n"
