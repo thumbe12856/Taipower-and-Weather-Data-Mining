@@ -1,9 +1,10 @@
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
+from time import time
 import pandas as pd
 import numpy as np
 import random
+import csv
 import getData
+import predictAlg
 
 morningTime = {
 	'from': ' 06:00',
@@ -29,62 +30,25 @@ predictTime = {
 	5: '2016-10-28 12:00'
 }
 
-def setTTData(traningDataIndex, testingDataIndex, data):
-	traningX = []
-	traningY = []
-	for i in traningDataIndex:
-		traningX.append([i])
-		traningY.append(data[i])
+algorithmType = {
+	0: "knn",
+	1: "Naive Bayes",
+	2: "Random Forest",
+	3: "svm",
 
-	testingX = []
-	testingY = []
-	for i in testingDataIndex:
-		testingX.append([i])
-		testingY.append(data[i])
+	4: "Bayesian regression",
+	5: "Decision tree regression",
+	6: "svr"
+}
 
-	return traningX, traningY, testingX, testingY
+def setTTData(dataIndex, data):
+	dataX = []
+	dataY = []
+	for i in dataIndex:
+		dataX.append([i])
+		dataY.append(data[i])
 
-
-""" knn algorithm to predict """
-def knn(traningX, traningY, testingX, testingY):
-
-	neigh = KNeighborsClassifier(n_neighbors=4)
-	neigh.fit(traningX, traningY) 
-
-	error = 0.0
-	ii = 0
-	for i in testingDataIndex:
-		predict = neigh.predict([[i]])
-		error += abs(predict[0] - testingY[ii]) / testingY[ii]
-		ii = ii + 1
-	error /= len(testingDataIndex)
-
-	predict = neigh.predict([[97]]) / 10
-	print "knn predict: " + str(round(predict[0], 1))
-	print "knn testing error percentage: " + str(round(error * 100, 2)) + "%"
-	print "knn predicting error percentage: " + str(round(abs(round(predict[0], 1) - realAnswer) / realAnswer * 100, 2)) + '%\n'
-
-	return
-
-def NaiveBayes(traningX, traningY, testingX, testingY):
-
-	clf = GaussianNB()
-	clf.fit(traningX, traningY) 
-
-	error = 0.0
-	ii = 0
-	for i in testingDataIndex:
-		predict = clf.predict([[i]])
-		error += abs(predict[0] - testingY[ii]) / testingY[ii]
-		ii = ii + 1
-	error /= len(testingDataIndex)
-
-	predict = clf.predict([[97]]) / 10
-	print "Naive Bayes predict: " + str(round(predict[0], 1))
-	print "Naive Bayes testing error percentage: " + str(round(error * 100, 2)) + "%"
-	print "Naive Bayes predicting error percentage: " + str(round(abs(round(predict[0], 1) - realAnswer) / realAnswer * 100, 2)) + '%\n'
-
-	return
+	return dataX, dataY
 
 
 """ main """
@@ -122,6 +86,22 @@ if __name__ == "__main__":
 	nightTemperature = getData.weather(3, nightTime, 'night')
 	temperature = pd.concat([morningTemperature, afternoonTemperature, nightTemperature], axis=1)
 
+	f = open('./result/predict/result.csv', 'w')
+	w = csv.writer(f)
+	writeData = [
+		['', 'Exact Value', '', ''], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], []
+	]
+	for i in algorithmType:
+		writeData[0].append(algorithmType[i])
+	for i in predictTime:
+		index = i + 1 + i * 3
+		print index
+		writeData[index].append(predictTime[i])
+		writeData[index].append('')
+		writeData[index].append('')
+		writeData[index].append("Predict Value")
+		writeData[index+1].append("Predicting error percentage")
+		writeData[index+2].append("Testing error percentage")
 
 	"""
 	Use 96 rows(27 days) to predict.
@@ -130,6 +110,15 @@ if __name__ == "__main__":
 	testing data: 30% (96 * 0.3 = 29)
 	"""
 	realIndex = 96
+	finalPredict = []
+	finalTestingError = []
+	finalPredictingError = []
+	""" 7 algorithm """
+	for i in range(7):
+		finalPredict.append(np.array([]))
+		finalTestingError.append(np.array([]))
+		finalPredictingError.append(np.array([]))
+
 	for i in range(1):
 		randomDataIndex = random.sample(xrange(0 + i, 96 + i), 96)
 		traningDataIndex = sorted(randomDataIndex[:67])
@@ -141,12 +130,24 @@ if __name__ == "__main__":
 			tempData[j] = round(northSupply[j % 12][j / 12], 1) * 10
 
 		""" set traning/testing data """
-		traningX, traningY, testingX, testingY = setTTData(traningDataIndex, testingDataIndex, tempData)
+		traningX, traningY = setTTData(traningDataIndex, tempData)
+		testingX, testingY = setTTData(testingDataIndex, tempData)
 		realAnswer = northSupply[(realIndex + i) % 12][(realIndex + i) / 12]
 
 		print "Date: ", predictTime[i]
 		print "Exact value: " + str(realAnswer) + '\n'
-		knn(traningX, traningY, testingX, testingY)
-		NaiveBayes(traningX, traningY, testingX, testingY)
+
+		for j in algorithmType:
+			t0 = time()
+			predict, testingError, predictingError = predictAlg.method(algorithmType[j], traningX, traningY, testingX, testingY, testingDataIndex, realAnswer)
+			print("done in %0.3fs.\n" % (time() - t0))
+			finalPredict[j] =  np.append(finalPredict[j], predict)
+			finalTestingError[j] = np.append(finalTestingError[j], testingError)
+			finalPredictingError[j] = np.append(finalPredictingError[j], predictingError)
 
 		print "\n"
+
+
+	w.writerows(writeData)
+	f.close()
+	#print np.average(finalPredictingError[3])
