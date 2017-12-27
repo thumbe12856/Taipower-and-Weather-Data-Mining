@@ -5,11 +5,11 @@ from sklearn import svm
 from sklearn import linear_model
 from sklearn.tree import DecisionTreeRegressor
 
-def method(alg, traningX, traningY, testingX, testingY, testingDataIndex, realAnswer):
+def method(alg, trainingX, trainingY, testingX, testingY, testingDataIndex, realAnswer):
 
-	if(alg == "knn"): 
-		""" knn algorithm to predict """
-		clf = KNeighborsClassifier(n_neighbors=4)
+	if(alg == "K Nearest Neighbor"): 
+		""" K Nearest Neighbor algorithm to predict """
+		clf = KNeighborsClassifier(n_neighbors=1)
 	
 	elif(alg == "Naive Bayes"):
 		""" Naive Bayes algorithm Gaussian model to predict """
@@ -17,21 +17,21 @@ def method(alg, traningX, traningY, testingX, testingY, testingDataIndex, realAn
 	
 	elif(alg == "Random Forest"):
 		""" Random Forest algorithm to predict """
-		clf = RandomForestClassifier(max_depth=100, random_state=0)
+		clf = RandomForestClassifier(max_depth=4, random_state=0)
 
-	elif(alg == "svm"):
+	elif(alg == "Support vector machine classification"):
 		""" Support vector machine classification algorithm to predict """
 		clf = svm.SVC()
 
 	elif(alg == "Bayesian regression"):
 		""" Bayesian regression algorithm to predict """
-		clf = linear_model.BayesianRidge(n_iter=1000)
+		clf = linear_model.BayesianRidge()
 
 	elif(alg == "Decision tree regression"):
 		""" Decision tree regression algorithm to predict """
-		clf = DecisionTreeRegressor(max_depth=2)	
+		clf = DecisionTreeRegressor()
 
-	elif(alg == "svr"):
+	elif(alg == "Support vector machine regression"):
 		""" Support vector machine regression algorithm to predict """
 		clf = svm.SVR()
 
@@ -39,7 +39,7 @@ def method(alg, traningX, traningY, testingX, testingY, testingDataIndex, realAn
 		print "error algorithm."
 		return
 
-	clf.fit(traningX, traningY) 
+	clf.fit(trainingX, trainingY) 
 
 	error = 0.0
 	ii = 0

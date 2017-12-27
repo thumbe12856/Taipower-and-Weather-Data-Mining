@@ -108,7 +108,8 @@ def weather(cityIndex, time, column):
 		temp.append(result[1])
 	value.append(temp)
 
-	valueDF = pd.DataFrame(value, columns=[column+"1", column+"2", column+"3", column+"4"])
+	#valueDF = pd.DataFrame(value, columns=[column+"1", column+"2", column+"3", column+"4"])
+	valueDF = pd.DataFrame(value, columns=[column, column+1, column+2, column+3])
 	# close connection
 	connet.close()
 	return valueDF

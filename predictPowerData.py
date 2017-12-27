@@ -31,14 +31,14 @@ predictTime = {
 }
 
 algorithmType = {
-	0: "knn",
+	0: "K Nearest Neighbor",
 	1: "Naive Bayes",
 	2: "Random Forest",
-	3: "svm",
+	3: "Support vector machine classification",
 
 	4: "Bayesian regression",
 	5: "Decision tree regression",
-	6: "svr"
+	6: "Support vector machine regression"
 }
 
 def setTTData(dataIndex, data):
@@ -50,6 +50,26 @@ def setTTData(dataIndex, data):
 
 	return dataX, dataY
 
+def getWriteDataIndex(i):
+	return i + 1 + i * 4
+
+def setWriteDataColumn():
+	writeData = [
+		['', 'Exact Value', '', ''], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], ['', '', ''], []
+	]
+	for i in algorithmType:
+		writeData[0].append(algorithmType[i])
+	for i in predictTime:
+		index = getWriteDataIndex(i)
+		writeData[index].append(predictTime[i])
+		writeData[index].append('')
+		writeData[index].append('')
+		writeData[index].append("Predict Value")
+		writeData[index+1].append("Predicting error percentage")
+		writeData[index+2].append("Testing error percentage")
+		writeData[index+3].append("Time usage")
+
+	return writeData
 
 """ main """
 if __name__ == "__main__":
@@ -81,32 +101,20 @@ if __name__ == "__main__":
 	 	...
 	 	Temperature['2016-10-01']['night 21:00']
 	"""
-	morningTemperature = getData.weather(3, morningTime, 'morning')
-	afternoonTemperature = getData.weather(3, afternoonTime, 'afternoon')
-	nightTemperature = getData.weather(3, nightTime, 'night')
+	morningTemperature = getData.weather(3, morningTime, 0)
+	afternoonTemperature = getData.weather(3, afternoonTime, 4)
+	nightTemperature = getData.weather(3, nightTime, 8)
 	temperature = pd.concat([morningTemperature, afternoonTemperature, nightTemperature], axis=1)
 
+	""" write the result to csv file """
 	f = open('./result/predict/result.csv', 'w')
 	w = csv.writer(f)
-	writeData = [
-		['', 'Exact Value', '', ''], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], [], [], ['', '', ''], ['', '', ''], []
-	]
-	for i in algorithmType:
-		writeData[0].append(algorithmType[i])
-	for i in predictTime:
-		index = i + 1 + i * 3
-		print index
-		writeData[index].append(predictTime[i])
-		writeData[index].append('')
-		writeData[index].append('')
-		writeData[index].append("Predict Value")
-		writeData[index+1].append("Predicting error percentage")
-		writeData[index+2].append("Testing error percentage")
+	writeData = setWriteDataColumn()
 
 	"""
 	Use 96 rows(27 days) to predict.
 	Window will be slided 2 hour each time.
-	traning data: 70% (96 * 0.7 = 67)
+	training data: 70% (96 * 0.7 = 67)
 	testing data: 30% (96 * 0.3 = 29)
 	"""
 	realIndex = 96
@@ -119,34 +127,45 @@ if __name__ == "__main__":
 		finalTestingError.append(np.array([]))
 		finalPredictingError.append(np.array([]))
 
-	for i in range(1):
+	print temperature
+	for i in range(6):
 		randomDataIndex = random.sample(xrange(0 + i, 96 + i), 96)
-		traningDataIndex = sorted(randomDataIndex[:67])
+		trainingDataIndex = sorted(randomDataIndex[:67])
 		testingDataIndex = sorted(randomDataIndex[67:96])
 
 		""" reshape """
 		tempData = [0] * 200
 		for j in randomDataIndex:
-			tempData[j] = round(northSupply[j % 12][j / 12], 1) * 10
+			tempData[j] = round(temperature[j % 12][j / 12], 1) * 10
+			#tempData[j] = round(northSupply[j % 12][j / 12], 1) * 10
+			#tempData[j] = round(morningTemperature["morning" + str(j % 4 + 1)][j / 4], 1) * 10
 
-		""" set traning/testing data """
-		traningX, traningY = setTTData(traningDataIndex, tempData)
+		""" set training/testing data """
+		trainingX, trainingY = setTTData(trainingDataIndex, tempData)
 		testingX, testingY = setTTData(testingDataIndex, tempData)
-		realAnswer = northSupply[(realIndex + i) % 12][(realIndex + i) / 12]
+		realAnswer = temperature[(realIndex + i) % 12][(realIndex + i) / 12]
+		#realAnswer = northSupply[(realIndex + i) % 12][(realIndex + i) / 12]
+		#realAnswer = morningTemperature["morning" + str((realIndex + i) % 4 + 1)][(realIndex + i) / 4]
 
 		print "Date: ", predictTime[i]
 		print "Exact value: " + str(realAnswer) + '\n'
+		index = getWriteDataIndex(i)
+		writeData[index][1] = realAnswer
 
 		for j in algorithmType:
 			t0 = time()
-			predict, testingError, predictingError = predictAlg.method(algorithmType[j], traningX, traningY, testingX, testingY, testingDataIndex, realAnswer)
+			predict, testingError, predictingError = predictAlg.method(algorithmType[j], trainingX, trainingY, testingX, testingY, testingDataIndex, realAnswer)
 			print("done in %0.3fs.\n" % (time() - t0))
+			writeData[index].append(predict)
+			writeData[index+1].append(str(predictingError) + '%')
+			writeData[index+2].append(str(testingError) + '%')
+			writeData[index+3].append("%0.3fs" % (time() - t0))
+
 			finalPredict[j] =  np.append(finalPredict[j], predict)
 			finalTestingError[j] = np.append(finalTestingError[j], testingError)
 			finalPredictingError[j] = np.append(finalPredictingError[j], predictingError)
 
 		print "\n"
-
 
 	w.writerows(writeData)
 	f.close()

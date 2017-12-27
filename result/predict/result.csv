@@ -1,37 +1,30 @@
-,Exact Value,,,knn,Naive Bayes,Random Forest,svm,Bayesian regression,Decision tree regression,svr
-2016-10-28 06:00,,,Predict Value
-,,,Predicting error percentage
-,,,Testing error percentage
-
-2016-10-28 07:00,,,Predict Value
-,,,Predicting error percentage
-,,,Testing error percentage
-
-2016-10-28 08:00,,,Predict Value
-,,,Predicting error percentage
-,,,Testing error percentage
-
-2016-10-28 09:00,,,Predict Value
-,,,Predicting error percentage
-,,,Testing error percentage
-
-2016-10-28 11:00,,,Predict Value
-,,,Predicting error percentage
-,,,Testing error percentage
-
-2016-10-28 12:00,,,Predict Value
-,,,Predicting error percentage
-,,,Testing error percentage
-
-
-,,
-,,
-
-
-,,
-,,
-
-
-,,
-,,
-
+,Exact Value,,,K Nearest Neighbor,Naive Bayes,Random Forest,Support vector machine classification,Bayesian regression,Decision tree regression,Support vector machine regression
+2016-10-28 06:00,26.1,,Predict Value,28.1,28.1,28.1,28.6,29.3,28.1,29.3
+,,,Predicting error percentage,7.66%,7.66%,7.66%,9.58%,12.26%,7.66%,12.26%
+,,,Testing error percentage,4.23%,5.78%,4.59%,5.53%,6.88%,4.23%,6.7%
+,,,Time usage,0.012s,0.053s,0.062s,0.008s,0.002s,0.003s,0.003s
+,,,,,,,,,,
+2016-10-28 07:00,25.9,,Predict Value,28.1,28.1,28.1,25.7,28.9,28.1,29.3
+,,,Predicting error percentage,8.49%,8.49%,8.49%,0.77%,11.58%,8.49%,13.13%
+,,,Testing error percentage,4.47%,8.39%,7.17%,7.78%,6.59%,4.47%,6.62%
+,,,Time usage,0.015s,0.059s,0.071s,0.009s,0.003s,0.002s,0.003s
+,,,,,,,,,,
+2016-10-28 08:00,27.5,,Predict Value,25.9,25.9,25.9,25.9,28.5,25.9,28.6
+,,,Predicting error percentage,5.82%,5.82%,5.82%,5.82%,3.64%,5.82%,4.0%
+,,,Testing error percentage,3.73%,5.88%,4.1%,4.58%,6.32%,3.73%,6.66%
+,,,Time usage,0.019s,0.058s,0.065s,0.010s,0.003s,0.004s,0.005s
+,,,,,,,,,,
+2016-10-28 09:00,29.5,,Predict Value,25.9,25.9,27.5,25.9,28.2,25.9,28.7
+,,,Predicting error percentage,12.2%,12.2%,6.78%,12.2%,4.41%,12.2%,2.71%
+,,,Testing error percentage,4.13%,5.8%,6.28%,6.74%,6.85%,4.13%,6.97%
+,,,Time usage,0.029s,0.069s,0.075s,0.011s,0.004s,0.003s,0.003s
+,,,,,,,,,,
+2016-10-28 11:00,31,,Predict Value,25.9,25.9,25.9,25.9,28.2,25.9,29.1
+,,,Predicting error percentage,16.45%,16.45%,16.45%,16.45%,9.03%,16.45%,6.13%
+,,,Testing error percentage,3.68%,4.85%,8.34%,7.9%,5.48%,3.68%,5.76%
+,,,Time usage,0.026s,0.081s,0.111s,0.012s,0.003s,0.004s,0.008s
+,,,,,,,,,,
+2016-10-28 12:00,32.2,,Predict Value,26.1,28.1,26.1,30.4,28.9,26.1,29.1
+,,,Predicting error percentage,18.94%,12.73%,18.94%,5.59%,10.25%,18.94%,9.63%
+,,,Testing error percentage,4.65%,6.38%,7.1%,8.57%,7.67%,4.65%,7.77%
+,,,Time usage,0.020s,0.080s,0.098s,0.013s,0.003s,0.002s,0.006s
